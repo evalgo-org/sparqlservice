@@ -1,0 +1,18 @@
+PREFIX dcterms:<http://purl.org/dc/terms/>
+PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+PREFIX czo:<https://schema.zeiss.com/CZ-Ontology/>
+PREFIX stats:<https://schema.pantopix.com/stats#>
+
+CONSTRUCT {
+#stats:allUsers stats:count ?count_nodes .
+?useruri czo:URI4IRI ?userU4I ;
+czo:ZeissID ?ZeissID .
+}
+
+WHERE {
+ ?useruri a czo:User ;
+ czo:URI4IRI ?userU4I ;
+ czo:User-has-Role [] .
+
+ BIND(STRAFTER(STR(?userU4I), "#") AS ?ZeissID)    
+}

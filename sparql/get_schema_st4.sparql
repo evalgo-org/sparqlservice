@@ -1,0 +1,50 @@
+PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+PREFIX czo:<https://schema.zeiss.com/CZ-Ontology/>
+PREFIX dcterms:<http://purl.org/dc/terms/>
+PREFIX adhoc:<https://schema.pantopix.com/adhoc#>
+PREFIX isa:<https://isa.zeiss.com/ISAProductOntology/>
+
+CONSTRUCT {
+
+   ?rootConcept czo:URI4IRI ?rootConceptU4I ; #the root concept has to be a ConceptScheme for xsl. It has to have the "hasTopConcept" at least.
+                skos:prefLabel ?rootConceptTitle ;
+                skos:hasTopConcept ?conceptUri ;
+                a skos:ConceptScheme .
+
+	?conceptUri czo:URI4IRI ?conceptU4I ;
+                skos:prefLabel ?conceptLabel ;
+                a ?conceptType ;
+                czo:ProdHasSupportStatus ?SupportStatus ;
+                czo:prodHierID ?ProdHierID;
+                adhoc:hasChild ?myChildElements ;
+                adhoc:hasParent ?myParentElements .
+}
+WHERE {
+    
+        VALUES ?rootConcept {<{{.ConceptScheme}}>}
+
+        ?rootConcept dcterms:title|skos:prefLabel ?rootConceptTitle. #root is not enforced to be ConceptScheme in the data, because IQS also wants to target topConcepts.
+    
+        
+		?rootConcept czo:URI4IRI ?rootConceptU4I.
+     
+        
+        #find all concepts in the subtree
+        {?rootConcept skos:hasTopConcept*/skos:narrower*/czo:Hardware-Product-Hierarchy-contains-Hardware-Product* ?conceptUri.}
+        
+        # Type and Parent
+        ?conceptUri skos:prefLabel ?conceptLabel ;
+                    a ?conceptType ;
+                    czo:URI4IRI ?conceptU4I ;
+                    skos:topConceptOf | skos:broader | ^czo:Hardware-Product-Hierarchy-contains-Hardware-Product  ?myParentElements.
+        
+        
+        OPTIONAL { #hasChildren
+            ?conceptUri skos:narrower | czo:Hardware-Product-Hierarchy-contains-Hardware-Product ?myChildElements
+        }
+        
+	    OPTIONAL {
+            ?conceptUri czo:prodHierID ?ProdHierID .
+		}
+    
+}

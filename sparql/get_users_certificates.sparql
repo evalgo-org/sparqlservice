@@ -1,0 +1,124 @@
+# ZEISS AUA UserID - skills for product
+# Query all access rights of a SINGLE USER and return their skills for products including those products inside hierarchies / market views
+
+PREFIX dcterms:<http://purl.org/dc/terms/>
+PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+PREFIX czo:<https://schema.zeiss.com/CZ-Ontology/>
+
+CONSTRUCT {
+    ?user czo:ID ?ZeissID ;
+        czo:User-has-skills-for-Product ?product_subtree_element .
+    ?product_subtree_element skos:prefLabel ?HWProdLabel ;
+        czo:URI4IRI ?HWProdIRI ;
+        czo:IC_URI4IRI ?InstrumentCodeIRI .
+    ?user czo:User-has-special-role ?specialrole .
+    ?specialrole czo:URI4IRI ?specialroleU4I ;
+            skos:prefLabel ?specialroleLabel ;
+            czo:role-for-application ?applicationU4I .
+    ?user czo:User-has-Role ?role .
+    ?role czo:Role-is-restricted-to-Source ?source .
+    ?source a ?source_metadataclass ;
+        czo:URI4IRI ?source_metadataIRI ;
+        skos:prefLabel ?source_label .
+    ?role czo:Role-is-restricted-to-Document-Status ?documentstatus .
+    ?documentstatus a ?documentstatus_metadataclass ;
+        czo:URI4IRI ?documentstatus_metadataIRI ;
+        skos:prefLabel ?documentstatus_label .
+    ?role czo:Role-is-restricted-to-Information-Type ?documenttype .
+    ?documenttype a ?documenttype_metadataclass ;
+        czo:URI4IRI ?documenttype_metadataIRI ;
+        skos:prefLabel ?documenttype_label .
+    ?role czo:Role-is-restricted-to-Protection-Class ?protectionclass .
+        ?protectionclass a ?protectionclass_metadataclass ;
+        czo:URI4IRI ?protectionclass_metadataIRI ;
+        skos:prefLabel ?protectionclass_label .
+    ?role czo:Role-is-restricted-to-Target-Group ?targetgroup .
+    ?targetgroup a ?targetgroup_metadataclass ;
+        czo:URI4IRI ?targetgroup_metadataIRI ;
+        skos:prefLabel ?targetgroup_label .
+
+}               
+
+WHERE {
+VALUES ?BU {"IQS" "mic"}
+VALUES ?qlang {"en-US"}
+?user czo:URI4IRI ?userU4I .
+
+##############skills for product################################
+OPTIONAL {
+?user czo:User-has-skills-for-Product ?product . 
+?product czo:Market-View-contains-Hardware-Product?/skos:narrower* ?product_subtree_element .
+?product_subtree_element skos:prefLabel ?HWProdLabel ;
+    czo:URI4IRI ?HWProdIRI .
+FILTER(langmatches(lang(?HWProdLabel), "en-US"))
+?product_subtree_element czo:ProductHasInstumentCode ?product_subtree_element_IC .
+?product_subtree_element_IC czo:URI4IRI ?InstrumentCodeIRI .
+}
+##################special role##################
+
+OPTIONAL {
+?user czo:User-has-special-role ?specialrole .
+?specialrole czo:URI4IRI ?specialroleU4I ;
+            skos:prefLabel ?specialroleLabel .
+
+# role is valid for which application, get application properties
+?specialrole czo:role-for-application ?application .
+?application czo:URI4IRI ?applicationU4I .
+BIND(STRAFTER(STR(?applicationU4I), "#") as ?applicationID)
+
+FILTER(langMatches(lang(?specialroleLabel), ?qlang))
+}
+
+################# meta constraints von Rolle
+# Source
+?user czo:User-has-Role ?role .
+OPTIONAL {
+
+    ?role czo:Role-is-restricted-to-Source/skos:narrower* ?source .
+    ?source a ?source_metadataclass ;
+        czo:URI4IRI ?source_metadataIRI ;
+        skos:prefLabel ?source_label .
+    FILTER(?source_metadataclass != skos:Concept)
+    FILTER(langmatches(lang(?source_label), ?qlang))
+}
+
+# Document-Status
+OPTIONAL {
+    ?role czo:Role-is-restricted-to-Document-Status/skos:narrower* ?documentstatus .
+    ?documentstatus a ?documentstatus_metadataclass ;
+        czo:URI4IRI ?documentstatus_metadataIRI ;
+        skos:prefLabel ?documentstatus_label .
+    FILTER(?documentstatus_metadataclass != skos:Concept)
+    FILTER(langMatches(lang(?documentstatus_label), ?qlang))
+}
+
+# Document-Type
+OPTIONAL {
+    ?role czo:Role-is-restricted-to-Information-Type/skos:narrower* ?documenttype .
+    ?documenttype a ?documenttype_metadataclass ;
+        czo:URI4IRI ?documenttype_metadataIRI ;
+        skos:prefLabel ?documenttype_label .
+    FILTER(?documenttype_metadataclass != skos:Concept)
+    FILTER(langMatches(lang(?documenttype_label), ?qlang))
+}
+
+# Protection-Class
+OPTIONAL {
+    ?role czo:Role-is-restricted-to-Protection-Class/skos:narrower* ?protectionclass .
+        ?protectionclass a ?protectionclass_metadataclass ;
+        czo:URI4IRI ?protectionclass_metadataIRI ;
+        skos:prefLabel ?protectionclass_label .
+    FILTER(?protectionclass_metadataclass != skos:Concept)
+    FILTER(langMatches(lang(?protectionclass_label), ?qlang))
+}
+
+# Target-Group
+OPTIONAL {
+    ?role czo:Role-is-restricted-to-Target-Group/skos:narrower* ?targetgroup .
+    ?targetgroup a ?targetgroup_metadataclass ;
+        czo:URI4IRI ?targetgroup_metadataIRI ;
+        skos:prefLabel ?targetgroup_label .
+    FILTER(?targetgroup_metadataclass != skos:Concept)
+    FILTER(langMatches(lang(?targetgroup_label), ?qlang))
+}
+}

@@ -1,0 +1,21 @@
+{
+  "@context": "https://schema.org",
+  "@type": "SearchAction",
+  "identifier": "iqs-inline-query",
+  "name": "IQS: Inline SPARQL Query Example",
+  "description": "Example of executing an inline SPARQL query without template file",
+  "query": {
+    "@type": "SearchAction",
+    "queryInput": "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\nPREFIX dc: <http://purl.org/dc/elements/1.1/>\n\nSELECT ?scheme ?title WHERE {\n  ?scheme a skos:ConceptScheme .\n  ?scheme dc:title ?title .\n} LIMIT 10"
+  },
+  "target": {
+    "@type": "DataCatalog",
+    "identifier": "IQS",
+    "url": "${POOLPARTY_URL}",
+    "encodingFormat": "application/sparql-results+json",
+    "additionalProperty": {
+      "username": "${POOLPARTY_USERNAME}",
+      "password": "${POOLPARTY_PASSWORD}"
+    }
+  }
+}

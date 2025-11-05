@@ -1,0 +1,31 @@
+{
+  "@context": "https://schema.org",
+  "@type": "ScheduledAction",
+  "identifier": "sparql-all-users-hourly",
+  "name": "Hourly All Users SPARQL Query",
+  "description": "Execute SPARQL query for all users every 4 hours",
+  "object": {
+    "@type": "SearchAction",
+    "identifier": "iqs-all-users",
+    "name": "IQS: Query All Users",
+    "description": "Query all users from PoolParty IQS project",
+    "query": {
+      "@type": "SearchAction",
+      "contentUrl": "/home/opunix/sparqlservice/sparql/get_all_users.sparql"
+    },
+    "target": {
+      "@type": "DataCatalog",
+      "identifier": "IQS",
+      "url": "registry://sparqlservice/v1/api/semantic/action",
+      "encodingFormat": "application/rdf+xml",
+      "additionalProperty": {
+        "username": "${POOLPARTY_USERNAME}",
+        "password": "${POOLPARTY_PASSWORD}"
+      }
+    }
+  },
+  "additionalProperty": {
+    "schedule": "every 4h",
+    "command": "/home/opunix/fetcher/fetcher semantic /home/opunix/sparqlservice/examples/workflows/02-all-users.json"
+  }
+}

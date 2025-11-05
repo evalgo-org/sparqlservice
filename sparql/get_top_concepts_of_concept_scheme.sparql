@@ -1,0 +1,31 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+PREFIX czo:<https://schema.zeiss.com/CZ-Ontology/>
+PREFIX ppt:<http://schema.semantic-web.at/ppt/>
+PREFIX adhoc:<https://schema.pantopix.com/adhoc#>
+
+
+CONSTRUCT {
+    ?topConcept rdf:type ?class;
+    			skos:prefLabel ?prefLabel;
+    			czo:URI4IRI ?u4i;
+    			adhoc:kpackName ?kpackName
+    
+}
+
+WHERE {
+    VALUES ?rootConcept {<{{.ConceptScheme}}>}
+
+    ?rootConcept a skos:ConceptScheme; 
+    				skos:hasTopConcept ?topConcept.
+    
+    OPTIONAL {
+    		?rootConcept czo:K-Pack-Empolis-Class-Name ?kpackName.
+    }
+
+    ?topConcept a ?class;
+    			skos:prefLabel ?prefLabel;
+    			czo:URI4IRI ?u4i
+    
+    FILTER(CONTAINS(STR(?class), "CZ-Ontology"))
+}

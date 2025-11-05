@@ -1,0 +1,29 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+PREFIX czo:<https://schema.zeiss.com/CZ-Ontology/>
+PREFIX adhoc:<https://schema.pantopix.com/adhoc#>
+
+CONSTRUCT {
+   ?DeviceNumber a czo:Device-Number;
+    			skos:prefLabel ?NumberLabel;
+    			czo:URI4IRI ?NumberU4I;
+    			adhoc:isNumberForProductU4I ?ProductU4I;
+    			adhoc:isNumberForSizeU4I ?ProductSizeU4I.
+
+}
+
+WHERE {
+   ?DeviceNumber a czo:Device-Number;
+    			skos:prefLabel ?NumberLabel;
+    			czo:URI4IRI ?NumberU4I.
+    
+    #FILTER(REGEX(?NumberLabel, "^623545-9007-135$"))
+    
+    ?DeviceNumber czo:deviceNumberForHardwareProduct ?ProductUri.
+    ?ProductUri czo:URI4IRI ?ProductU4I.
+    
+    OPTIONAL {
+        ?DeviceNumber czo:deviceNumberForHardwareProductSize ?ProductSizeUri.
+        ?ProductSizeUri czo:URI4IRI ?ProductSizeU4I
+    }   
+}

@@ -1,0 +1,86 @@
+PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+PREFIX czo:<https://schema.zeiss.com/CZ-Ontology/>
+PREFIX dcterms:<http://purl.org/dc/terms/>
+PREFIX adhoc:<https://schema.pantopix.com/adhoc#>
+
+
+CONSTRUCT {
+
+?rootConcept czo:URI4IRI ?rootConceptU4I ; # 
+    skos:prefLabel ?rootConceptTitle ;
+    czo:K-Pack-Empolis-Class-Name ?empolisClassName ;
+    skos:hasTopConcept ?conceptUri ;
+    a skos:ConceptScheme .
+
+?conceptUri czo:URI4IRI ?conceptU4I ;
+    skos:prefLabel ?conceptLabel ;
+    a ?conceptType ;
+    czo:ProductHasInstumentCode ?IC ;
+    czo:ProdHasSupportStatus ?SupportStatus ;
+    czo:prodHierID ?ProdHierID;
+    adhoc:deviceNumbersPrefLabel ?DeviceNumber;
+    adhoc:deviceNumbersAltLabel ?DeviceNumberAltLabel;
+    adhoc:hasChild ?myChildElements ;
+    adhoc:hasParent ?myParentElements ;
+    skos:altLabel ?altLabel.
+}
+WHERE {
+
+VALUES ?rootConcept {<{{.ConceptScheme}}>}
+
+?rootConcept czo:URI4IRI ?rootConceptU4I ;
+    dcterms:title | skos:prefLabel ?rootConceptTitle .
+OPTIONAL {?rootConcept czo:K-Pack-Empolis-Class-Name ?empolisClassName .}
+
+{?rootConcept (skos:hasTopConcept | skos:narrower)/skos:narrower* ?conceptUri .}
+UNION
+{?rootConcept skos:hasTopConcept/skos:narrower/czo:Market-View-contains-Hardware-Product/skos:narrower* ?conceptUri .}
+UNION
+{?rootConcept (skos:hasTopConcept | skos:narrower)/(skos:narrower | czo:Hardware-Product-Hierarchy-contains-Hardware-Product | czo:ProductComponentHierarchyConsistsOfComponent | czo:Software-Product-Hierarchy-contains-Software-Product | czo:informationTypeViewContainsInformationType)+ ?conceptUri .} 
+UNION
+{?rootConcept czo:informationTypeViewContainsInformationType ?conceptUri}
+
+?conceptUri skos:prefLabel ?conceptLabel ;
+    a ?conceptType ;
+    skos:topConceptOf | skos:broader | ^czo:Hardware-Product-Hierarchy-contains-Hardware-Product | ^czo:Market-View-contains-Hardware-Product | ^czo:Hardware-Product-Hierarchy-contains-Hardware-Product | ^czo:ProductComponentHierarchyConsistsOfComponent | ^czo:Software-Product-Hierarchy-contains-Software-Product | ^czo:informationTypeViewContainsInformationType ?myParentElements  .
+FILTER( ?conceptType != skos:Concept)
+
+OPTIONAL {
+    ?conceptUri czo:URI4IRI ?conceptU4I .
+}
+
+OPTIONAL {
+    ?conceptUri skos:hasTopConcept | skos:narrower | czo:Hardware-Product-Hierarchy-contains-Hardware-Product | czo:Market-View-contains-Hardware-Product | czo:Hardware-Product-Hierarchy-contains-Hardware-Product | czo:ProductComponentHierarchyConsistsOfComponent | czo:Software-Product-Hierarchy-contains-Software-Product | czo:informationTypeViewContainsInformationType ?myChildElements .
+}
+OPTIONAL {
+    ?conceptUri czo:ProductHasInstumentCode ?ICUri .
+    ?ICUri czo:URI4IRI ?ICU4I.
+    BIND(STRAFTER(STR(?ICU4I), "#IC-") AS ?IC)
+}
+
+OPTIONAL {
+    ?conceptUri czo:ProdHasSupportStatus ?supportStatusIRI.
+    ?supportStatusIRI skos:prefLabel ?SupportStatus.
+    #FILTER(LANG(?SupportStatus) = "en-US")
+    FILTER(LANGMATCHES(LANG(?SupportStatus), "en-US"))
+}
+
+OPTIONAL { # IQS does not have IC but only ProdHierID
+    ?conceptUri czo:prodHierID ?ProdHierID;
+}
+
+OPTIONAL { # IQS also wants the Device Number
+    ?conceptUri czo:hardwareProductHasDeviceNumber ?DeviceNumberURI.
+    ?DeviceNumberURI skos:prefLabel ?DeviceNumber.
+    FILTER(LANG(?DeviceNumber) = "en")
+    ?DeviceNumberURI skos:altLabel ?DeviceNumberAltLabel.
+    FILTER(LANG(?DeviceNumberAltLabel) = "en")
+    
+}
+
+OPTIONAL { # for information types (DocumentType) we want the prefLabel instead of the IC/prodHierID
+    ?conceptUri a czo:DocumentType;
+        skos:altLabel ?altLabel.
+}
+
+}

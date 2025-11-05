@@ -1,0 +1,21 @@
+{
+  "@context": "https://schema.org",
+  "@type": "SearchAction",
+  "identifier": "iqs-all-users",
+  "name": "IQS: Query All Users",
+  "description": "Query all users from PoolParty IQS project",
+  "query": {
+    "@type": "SearchAction",
+    "contentUrl": "get_all_users.sparql"
+  },
+  "target": {
+    "@type": "DataCatalog",
+    "identifier": "IQS",
+    "url": "${POOLPARTY_URL}",
+    "encodingFormat": "application/rdf+xml",
+    "additionalProperty": {
+      "username": "${POOLPARTY_USERNAME}",
+      "password": "${POOLPARTY_PASSWORD}"
+    }
+  }
+}

@@ -1,0 +1,34 @@
+PREFIX dcterms:<http://purl.org/dc/terms/>
+PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+PREFIX czo:<https://schema.zeiss.com/CZ-Ontology/>
+
+SELECT DISTINCT
+
+?HWProdIRI 
+
+(GROUP_CONCAT(DISTINCT ?InstrumentCodeSubtree_Element; SEPARATOR=",") AS ?InstrumentCodeSubtree)
+
+WHERE {
+
+?concept a ?type .
+
+FILTER(?type = czo:Product-Hierarchy-Class || ?type = czo:Product)
+
+?concept skos:narrower* ?qualified_for .
+
+?qualified_for czo:URI4IRI ?HWProdIRI .
+
+OPTIONAL {
+    ?qualified_for czo:ProductHasInstumentCode ?qualified_for_ICUri .
+    ?qualified_for_ICUri czo:URI4IRI ?qualified_for_IC_U4I .
+}
+
+?qualified_for skos:narrower* ?qualified_for_tree .
+?qualified_for_tree a czo:Product ;
+    czo:ProductHasInstumentCode ?qualified_for_tree_ICUri .
+?qualified_for_tree_ICUri czo:URI4IRI ?qualified_for_tree_IC_U4I .
+BIND (STRAFTER((STR(?qualified_for_tree_IC_U4I)), "#IC-") AS ?InstrumentCodeSubtree_Element)
+
+}
+
+GROUP BY ?HWProdIRI ?qualified_for_IC_U4I

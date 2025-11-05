@@ -1,0 +1,24 @@
+{
+  "@context": "https://schema.org",
+  "@type": "SearchAction",
+  "identifier": "iqs-top-concepts",
+  "name": "IQS: Query Top Concepts of Concept Scheme",
+  "description": "Query top concepts of a specific concept scheme from PoolParty IQS project",
+  "query": {
+    "@type": "SearchAction",
+    "contentUrl": "get_top_concepts_of_concept_scheme.sparql",
+    "additionalProperty": {
+      "concept_scheme": "https://data.zeiss.com/IQS/3578"
+    }
+  },
+  "target": {
+    "@type": "DataCatalog",
+    "identifier": "IQS",
+    "url": "${POOLPARTY_URL}",
+    "encodingFormat": "application/rdf+xml",
+    "additionalProperty": {
+      "username": "${POOLPARTY_USERNAME}",
+      "password": "${POOLPARTY_PASSWORD}"
+    }
+  }
+}

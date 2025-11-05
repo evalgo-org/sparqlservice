@@ -1,0 +1,34 @@
+{
+  "@context": "https://schema.org",
+  "@type": "ScheduledAction",
+  "identifier": "sparql-concept-schemes-daily",
+  "name": "Daily Concept Schemes SPARQL Query",
+  "description": "Execute SPARQL query for concept schemes every day",
+  "object": {
+    "@type": "SearchAction",
+    "identifier": "iqs-concept-schemes",
+    "name": "IQS: Query Concept Schemes",
+    "description": "Query all concept schemes from PoolParty IQS project",
+    "query": {
+      "@type": "SearchAction",
+      "contentUrl": "/home/opunix/sparqlservice/sparql/get_concept_schemes.sparql",
+      "additionalProperty": {
+        "language": "de-DE"
+      }
+    },
+    "target": {
+      "@type": "DataCatalog",
+      "identifier": "IQS",
+      "url": "registry://sparqlservice/v1/api/semantic/action",
+      "encodingFormat": "application/rdf+xml",
+      "additionalProperty": {
+        "username": "${POOLPARTY_USERNAME}",
+        "password": "${POOLPARTY_PASSWORD}"
+      }
+    }
+  },
+  "additionalProperty": {
+    "schedule": "every 24h",
+    "command": "/home/opunix/fetcher/fetcher semantic /home/opunix/sparqlservice/examples/workflows/01-concept-schemes.json"
+  }
+}
