@@ -47,7 +47,7 @@ func main() {
 		Port:         portInt,
 		Directory:    "/home/opunix/sparqlservice",
 		Binary:       "sparqlservice",
-		Capabilities: []string{"sparql", "rdf", "semantic-query", "semantic-actions"},
+		Capabilities: []string{"graph-database", "sparql", "rdf", "semantic-query"},
 	}); err != nil {
 		logger.WithError(err).Error("Failed to register with registry")
 	}
