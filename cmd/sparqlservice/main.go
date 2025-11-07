@@ -41,7 +41,12 @@ func main() {
 			{
 				Method:      "POST",
 				Path:        "/v1/api/semantic/action",
-				Description: "Execute SPARQL queries via semantic actions",
+				Description: "Execute SPARQL queries via semantic actions (primary interface)",
+			},
+			{
+				Method:      "POST",
+				Path:        "/v1/api/queries",
+				Description: "Execute SPARQL query (REST convenience - converts to SearchAction)",
 			},
 			{
 				Method:      "GET",
@@ -61,10 +66,15 @@ func main() {
 	apiGroup := e.Group("/v1/api")
 	sm.RegisterRoutes(apiGroup)
 
-	// Semantic API endpoint for SPARQL queries with EVE API key middleware
+	// API Key middleware
 	apiKey := os.Getenv("SPARQL_API_KEY")
 	apiKeyMiddleware := evehttp.APIKeyMiddleware(apiKey)
-	e.POST("/v1/api/semantic/action", handleSemanticAction, apiKeyMiddleware)
+
+	// Semantic API endpoint (primary interface)
+	apiGroup.POST("/semantic/action", handleSemanticAction, apiKeyMiddleware)
+
+	// REST endpoints (convenience adapters that convert to semantic actions)
+	registerRESTEndpoints(apiGroup, apiKeyMiddleware)
 
 	// Start server
 	port := os.Getenv("PORT")
