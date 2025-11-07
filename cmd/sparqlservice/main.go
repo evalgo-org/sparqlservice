@@ -31,11 +31,11 @@ func main() {
 
 	// Documentation endpoint
 	e.GET("/v1/api/docs", evehttp.DocumentationHandler(evehttp.ServiceDocConfig{
-		ServiceID:   "sparqlservice",
-		ServiceName: "SPARQL Query Service",
-		Description: "SPARQL query execution and RDF data management",
-		Version:     "v1",
-		Port:        8091,
+		ServiceID:    "sparqlservice",
+		ServiceName:  "SPARQL Query Service",
+		Description:  "SPARQL query execution and RDF data management",
+		Version:      "v1",
+		Port:         8091,
 		Capabilities: []string{"graph-database", "sparql", "rdf", "semantic-query", "state-tracking"},
 		Endpoints: []evehttp.EndpointDoc{
 			{
