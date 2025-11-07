@@ -36,7 +36,7 @@ func main() {
 		Description: "SPARQL query execution and RDF data management",
 		Version:     "v1",
 		Port:        8091,
-		Capabilities: []string{"graph-database", "sparql", "rdf", "semantic-query"},
+		Capabilities: []string{"graph-database", "sparql", "rdf", "semantic-query", "state-tracking"},
 		Endpoints: []evehttp.EndpointDoc{
 			{
 				Method:      "POST",
@@ -82,7 +82,7 @@ func main() {
 		Directory:    "/home/opunix/sparqlservice",
 		Binary:       "sparqlservice",
 		Version:      "v1",
-		Capabilities: []string{"graph-database", "sparql", "rdf", "semantic-query"},
+		Capabilities: []string{"graph-database", "sparql", "rdf", "semantic-query", "state-tracking"},
 		APIVersions: []registry.APIVersion{
 			{
 				Version:       "v1",
