@@ -6,7 +6,7 @@
 *.dylib
 
 # Go build artifacts
-sparqlservice
+/sparqlservice
 /cmd/sparqlservice/sparqlservice
 *.test
 *.out
