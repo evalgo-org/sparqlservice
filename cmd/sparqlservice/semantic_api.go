@@ -26,13 +26,9 @@ func handleSemanticAction(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Failed to parse action: %v", err))
 	}
 
-	// Route to appropriate handler based on @type
-	switch action.Type {
-	case "SearchAction":
-		return executeSearchAction(c, action)
-	default:
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unsupported action type: %s", action.Type))
-	}
+	// Dispatch to registered handler using the ActionRegistry
+	// No switch statement needed - handlers are registered at startup
+	return semantic.Handle(c, action)
 }
 
 // executeSearchAction executes a SPARQL query (SearchAction)
