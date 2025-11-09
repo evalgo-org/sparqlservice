@@ -170,4 +170,3 @@ exclude google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c
 
 replace google.golang.org/genproto => google.golang.org/genproto/googleapis/api v0.0.0-20251029180050-ab9386a59fda
 
-replace eve.evalgo.org => /home/opunix/eve
