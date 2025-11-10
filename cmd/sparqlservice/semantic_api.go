@@ -20,7 +20,19 @@ func handleSemanticAction(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Failed to read request body: %v", err))
 	}
 
-	// Parse as SemanticAction
+	// Try to parse as SemanticScheduledAction first (has query, target, etc. fields)
+	var scheduledAction semantic.SemanticScheduledAction
+	if err := semantic.FromJSONLD(body, &scheduledAction); err == nil {
+		// Check if this actually has scheduled action fields
+		fmt.Printf("DEBUG: Parsed scheduled action - Query: %v, Target: %v\n", scheduledAction.Query != nil, scheduledAction.Target != nil)
+		if scheduledAction.Query != nil || scheduledAction.Target != nil {
+			// Dispatch with SemanticScheduledAction
+			fmt.Printf("DEBUG: Dispatching as SemanticScheduledAction\n")
+			return semantic.Handle(c, &scheduledAction)
+		}
+	}
+
+	// Fall back to regular SemanticAction
 	action, err := semantic.ParseSemanticAction(body)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Failed to parse action: %v", err))
@@ -32,16 +44,40 @@ func handleSemanticAction(c echo.Context) error {
 }
 
 // executeSearchAction executes a SPARQL query (SearchAction)
-func executeSearchAction(c echo.Context, action *semantic.SemanticAction) error {
+// Accepts either *semantic.SemanticAction or *semantic.SemanticScheduledAction
+func executeSearchAction(c echo.Context, actionInterface interface{}) error {
+	fmt.Printf("DEBUG executeSearchAction: called with type %T\n", actionInterface)
 	// Extract query and endpoint using helpers
-	query, err := semantic.GetSearchQueryFromAction(action)
+	query, err := semantic.GetSearchQueryFromAction(actionInterface)
 	if err != nil {
+		// Get the underlying SemanticAction for error reporting
+		var action *semantic.SemanticAction
+		if sa, ok := actionInterface.(*semantic.SemanticScheduledAction); ok {
+			action = &sa.SemanticAction
+		} else {
+			action = actionInterface.(*semantic.SemanticAction)
+		}
 		return semantic.ReturnActionError(c, action, "Failed to extract query", err)
 	}
 
-	endpoint, err := semantic.GetSPARQLEndpointFromAction(action)
+	endpoint, err := semantic.GetSPARQLEndpointFromAction(actionInterface)
 	if err != nil {
+		// Get the underlying SemanticAction for error reporting
+		var action *semantic.SemanticAction
+		if sa, ok := actionInterface.(*semantic.SemanticScheduledAction); ok {
+			action = &sa.SemanticAction
+		} else {
+			action = actionInterface.(*semantic.SemanticAction)
+		}
 		return semantic.ReturnActionError(c, action, "Failed to extract SPARQL endpoint", err)
+	}
+
+	// Get the underlying SemanticAction for the rest of the function
+	var action *semantic.SemanticAction
+	if sa, ok := actionInterface.(*semantic.SemanticScheduledAction); ok {
+		action = &sa.SemanticAction
+	} else {
+		action = actionInterface.(*semantic.SemanticAction)
 	}
 
 	// Extract SPARQL endpoint credentials
@@ -134,20 +170,27 @@ func executeSearchAction(c echo.Context, action *semantic.SemanticAction) error 
 			return semantic.ReturnActionError(c, action, "Failed to write result to file", err)
 		}
 
-		// Create result dataset with file reference
-		action.Properties["result"] = &semantic.XMLDocument{
-			Type:           "Dataset",
-			Identifier:     fmt.Sprintf("%s-result", action.Identifier),
-			EncodingFormat: contentType,
-			ContentUrl:     outputFile,
+		// Use semantic Result structure for file output
+		action.Result = &semantic.SemanticResult{
+			Type:   "DigitalDocument",
+			Format: contentType,
+			Value: map[string]interface{}{
+				"contentUrl":     outputFile,
+				"encodingFormat": contentType,
+				"identifier":     fmt.Sprintf("%s-result", action.Identifier),
+			},
 		}
 		semantic.SetSuccessOnAction(action)
 
 		return c.JSON(http.StatusOK, action)
 	}
 
-	// Default: return inline result
-	action.Properties["result"] = string(result)
+	// Default: return inline result using semantic Dataset
+	action.Result = &semantic.SemanticResult{
+		Type:   "Dataset",
+		Format: contentType,
+		Output: string(result), // Raw SPARQL results
+	}
 	semantic.SetSuccessOnAction(action)
 
 	return c.JSON(http.StatusOK, action)
