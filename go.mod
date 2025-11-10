@@ -3,7 +3,7 @@ module sparqlservice.evalgo.org
 go 1.25.3
 
 require (
-	eve.evalgo.org v0.0.42
+	eve.evalgo.org v0.0.44
 	github.com/labstack/echo/v4 v4.13.4
 )
 
@@ -169,4 +169,3 @@ require (
 exclude google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c
 
 replace google.golang.org/genproto => google.golang.org/genproto/googleapis/api v0.0.0-20251029180050-ab9386a59fda
-
