@@ -3,7 +3,7 @@ module sparqlservice.evalgo.org
 go 1.25.3
 
 require (
-	eve.evalgo.org v0.0.48
+	eve.evalgo.org v0.0.50
 	github.com/labstack/echo/v4 v4.13.4
 )
 
